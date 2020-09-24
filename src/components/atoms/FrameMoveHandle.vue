@@ -1,5 +1,5 @@
 <template>
-  <div @mousedown="initMovement" @mouseup="endMovement">MOVER</div>
+  <div class="frame-move-handle">MOVER</div>
 </template>
 <script lang="ts">
 import Vue from "vue";
@@ -9,13 +9,15 @@ export default Vue.extend({
   data: () => ({
     initialHandlePosition: null,
   }),
-  methods: {
-    initMovement(event: MouseEvent) {
-      console.log(event);
-    },
-    endMovement(event: MouseEvent) {
-      console.log(event);
-    },
-  },
 });
 </script>
+<style scoped>
+.frame-move-handle {
+  user-select: none;
+  cursor: move;
+  cursor: grab;
+}
+.frame-move-handle:active {
+  cursor: grabbing;
+}
+</style>

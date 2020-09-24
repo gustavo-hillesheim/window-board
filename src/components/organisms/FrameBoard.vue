@@ -1,21 +1,16 @@
 <template>
   <div class="window-board">
-    <FrameCard>
-      <FrameMoveHandle />
-      <SiteFrame style="height: 100%"></SiteFrame>
-    </FrameCard>
+    <SiteFrame />
   </div>
 </template>
 <script lang="ts">
 import Vue from "vue";
 
-import FrameCard from "../molecules/FrameCard.vue";
-import SiteFrame from "../atoms/SiteFrame.vue";
-import FrameMoveHandle from "../atoms/FrameMoveHandle.vue";
+import SiteFrame from "./SiteFrame.vue";
 
 export default Vue.extend({
   name: "window-board",
-  components: { FrameCard, SiteFrame, FrameMoveHandle },
+  components: { SiteFrame },
 });
 </script>
 <style scoped>
