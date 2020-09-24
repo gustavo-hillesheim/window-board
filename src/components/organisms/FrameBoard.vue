@@ -1,6 +1,7 @@
 <template>
   <div class="window-board">
     <FrameCard>
+      <span>Segure aqui para mover</span>
       <SiteFrame></SiteFrame>
     </FrameCard>
   </div>
@@ -20,5 +21,6 @@ export default Vue.extend({
 .window-board {
   border: 1px solid #eeeeee;
   background-color: #fafafa;
+  position: relative;
 }
 </style>

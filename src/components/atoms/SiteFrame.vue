@@ -1,5 +1,5 @@
 <template>
-  <iframe src="http://www.google.com"></iframe>
+  <iframe src="http://clima.gustavohill.dev"></iframe>
 </template>
 <script lang="ts">
 import Vue from "vue";

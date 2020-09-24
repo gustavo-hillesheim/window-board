@@ -15,5 +15,10 @@ export default Vue.extend({
   background-color: white;
   padding: 2px;
   border: 1px solid #e0e0e0;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  resize: both;
+  overflow: scroll;
 }
 </style>
