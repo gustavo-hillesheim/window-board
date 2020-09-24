@@ -1,13 +1,10 @@
 <template>
-  <div class="home">
-    Home works!
-  </div>
+  <iframe src="http://www.google.com"></iframe>
 </template>
-
 <script lang="ts">
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "Home",
+  name: "site-frame",
 });
 </script>

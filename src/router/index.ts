@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 
-import HomePage from "../views/HomePage.vue";
+import BoardPage from "../views/BoardPage.vue";
 import PageLayout from "../components/PageLayout.vue";
 
 Vue.use(VueRouter);
@@ -13,19 +13,19 @@ const routes: Array<RouteConfig> = [
     component: PageLayout,
     children: [
       {
-        path: "home",
-        name: "home",
-        component: HomePage,
+        path: "board",
+        name: "board",
+        component: BoardPage,
       },
       {
         path: "**",
-        redirect: "/home",
+        redirect: "/board",
       },
     ],
   },
   {
     path: "**",
-    redirect: "/home",
+    redirect: "/board",
   },
 ];
 
