@@ -1,8 +1,8 @@
 <template>
   <div class="window-board">
     <FrameCard>
-      <span>Segure aqui para mover</span>
-      <SiteFrame></SiteFrame>
+      <FrameMoveHandle />
+      <SiteFrame style="height: 100%"></SiteFrame>
     </FrameCard>
   </div>
 </template>
@@ -11,10 +11,11 @@ import Vue from "vue";
 
 import FrameCard from "../molecules/FrameCard.vue";
 import SiteFrame from "../atoms/SiteFrame.vue";
+import FrameMoveHandle from "../atoms/FrameMoveHandle.vue";
 
 export default Vue.extend({
   name: "window-board",
-  components: { FrameCard, SiteFrame },
+  components: { FrameCard, SiteFrame, FrameMoveHandle },
 });
 </script>
 <style scoped>
