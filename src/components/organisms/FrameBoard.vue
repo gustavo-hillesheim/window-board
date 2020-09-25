@@ -4,7 +4,7 @@
       v-for="frame in frames"
       :key="frame.id"
       :style="getFrameStyle(frame)"
-      @move="moveFrame(frame, $event)"
+      @move="moveFrame(frame, $event.offset, $event.resolve)"
     />
   </div>
 </template>
@@ -38,9 +38,14 @@ export default Vue.extend({
         height: frame.height + "px",
       };
     },
-    moveFrame(frame: FrameData, offset: { offsetX: number; offsetY: number }) {
-      frame.x += offset.offsetX;
-      frame.y += offset.offsetY;
+    moveFrame(
+      frame: FrameData,
+      offset: { x: number; y: number },
+      resolveMoving: (hasMoved: boolean) => void
+    ) {
+      frame.x += offset.x;
+      frame.y += offset.y;
+      resolveMoving(true);
     },
   },
 });

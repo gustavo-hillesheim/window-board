@@ -7,12 +7,15 @@
         @search="siteUrl = $event"
       />
       <FrameMoveHandle
-        @mousedown.native="initDrag"
-        @mouseup.native="endDrag"
-        @mousemove.native="emitDragMovement"
+        @mousedown.native.prevent="initDrag"
+        @mouseup.native.prevent="endDrag"
       />
     </template>
-    <FrameWrapper style="height: 100%" :url="siteUrl"></FrameWrapper>
+    <FrameWrapper
+      style="height: 100%"
+      :url="siteUrl"
+      @mouseenter.native.prevent="endDrag"
+    ></FrameWrapper>
   </FrameCard>
 </template>
 <script lang="ts">
@@ -25,30 +28,49 @@ import FrameMoveHandle from "../atoms/FrameMoveHandle.vue";
 import SiteUrlInput from "../atoms/SiteUrlInput.vue";
 import FrameCard from "../molecules/FrameCard.vue";
 
+type DraggableListener = (e: MouseEvent) => void;
+
 export default Vue.extend({
   name: "site-frame",
   components: { FrameCard, FrameWrapper, FrameMoveHandle, SiteUrlInput },
   data: () => ({
     siteUrl: "https://clima.gustavohill.dev",
-    initialDragPosition: null as Position | null,
+    currentDragPosition: null as Position,
+    boundDragMovement: null as DraggableListener,
   }),
+  created() {
+    this.boundDragMovement = this.emitDragMovement.bind(this);
+  },
   methods: {
     initDrag(event: MouseEvent): void {
-      this.initialDragPosition = {
-        x: event.offsetX,
-        y: event.offsetY,
+      this.currentDragPosition = {
+        x: event.clientX,
+        y: event.clientY,
       };
+      document.addEventListener("mousemove", this.boundDragMovement);
     },
     endDrag(): void {
-      this.initialDragPosition = null;
+      this.currentDragPosition = null;
+      document.removeEventListener("mousemove", this.boundDragMovement);
     },
     emitDragMovement(event: MouseEvent): void {
-      if (this.initialDragPosition) {
-        const { x: currentX, y: currentY } = this.initialDragPosition;
-        const { offsetX: newX, offsetY: newY } = event;
+      if (this.currentDragPosition) {
+        const { x: currentX, y: currentY } = this.currentDragPosition;
+        const { clientX: newX, clientY: newY } = event;
+
         const xDelta = newX - currentX;
         const yDelta = newY - currentY;
-        this.$emit("move", { offsetX: xDelta, offsetY: yDelta });
+
+        this.$emit("move", {
+          offset: { x: xDelta, y: yDelta },
+          resolve: (moved: boolean) => {
+            // Atualiza os dados da posição atual para que o próximo offset seja calculado corretamente
+            if (moved && this.currentDragPosition) {
+              this.currentDragPosition.x += xDelta;
+              this.currentDragPosition.y += yDelta;
+            }
+          },
+        });
       }
     },
   },
