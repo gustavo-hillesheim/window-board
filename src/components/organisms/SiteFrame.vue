@@ -1,10 +1,6 @@
 <template>
-  <VueResizable
-    :width="bounds.width"
-    :height="bounds.height"
-    :left="bounds.x"
-    :top="bounds.y"
-    :disableAttributes="bounds.disabledBounds"
+  <ResizableBox
+    :bounds="bounds"
     @resize:start="isChangingBounds = true"
     @resize:move="handleResize"
     @resize:end="isChangingBounds = false"
@@ -16,18 +12,17 @@
           :initialValue="siteUrl"
           @search="siteUrl = $event"
         />
-        <FrameMoveHandle
-          @mousedown.native.prevent="initDrag"
-          @mouseup.native.prevent="endDrag"
-        />
+        <DraggableBox
+          @drag:start="handleDragStart"
+          @drag:end="handleDragEnd"
+          @drag:move="$emit('move', $event)"
+        >
+          <FrameMoveHandle />
+        </DraggableBox>
       </template>
-      <FrameWrapper
-        :style="frameStyle"
-        :url="siteUrl"
-        @mouseenter.native.prevent="endDrag"
-      ></FrameWrapper>
+      <FrameWrapper :style="frameStyle" :url="siteUrl"></FrameWrapper>
     </FrameCard>
-  </VueResizable>
+  </ResizableBox>
 </template>
 <script lang="ts">
 import Vue from "vue";
@@ -35,12 +30,12 @@ import VueResizable from "vue-resizable";
 
 import { Position } from "../../model/frame.model";
 
+import ResizableBox from "./ResizableBox.vue";
+import DraggableBox from "./DraggableBox.vue";
 import FrameWrapper from "../atoms/FrameWrapper.vue";
 import FrameMoveHandle from "../atoms/FrameMoveHandle.vue";
 import SiteUrlInput from "../atoms/SiteUrlInput.vue";
 import FrameCard from "../molecules/FrameCard.vue";
-
-type DraggableListener = (e: MouseEvent) => void;
 
 export default Vue.extend({
   name: "site-frame",
@@ -56,18 +51,13 @@ export default Vue.extend({
     FrameMoveHandle,
     SiteUrlInput,
     VueResizable,
+    DraggableBox,
+    ResizableBox,
   },
   data: () => ({
     siteUrl: "https://www.google.com/?igu=1",
     isChangingBounds: false,
-    currentDragPosition: null as Position,
-    boundDragMovement: null as DraggableListener,
-    boundEndDrag: null as DraggableListener,
   }),
-  created() {
-    this.boundDragMovement = this.emitDragMovement.bind(this);
-    this.boundEndDrag = this.endDrag.bind(this);
-  },
   computed: {
     frameStyle(): any {
       return {
@@ -85,42 +75,13 @@ export default Vue.extend({
         height: event.height,
       });
     },
-    initDrag(event: MouseEvent): void {
+    handleDragStart(): void {
       this.isChangingBounds = true;
-      this.currentDragPosition = {
-        x: event.clientX,
-        y: event.clientY,
-      };
       document.body.style.cursor = "grabbing";
-      document.addEventListener("mousemove", this.boundDragMovement);
-      document.addEventListener("mouseup", this.boundEndDrag);
     },
-    endDrag(): void {
+    handleDragEnd(): void {
       this.isChangingBounds = false;
-      this.currentDragPosition = null;
       document.body.style.cursor = "default";
-      document.removeEventListener("mousemove", this.boundDragMovement);
-      document.removeEventListener("mouseup", this.boundEndDrag);
-    },
-    emitDragMovement(event: MouseEvent): void {
-      if (this.currentDragPosition) {
-        const { x: currentX, y: currentY } = this.currentDragPosition;
-        const { clientX: newX, clientY: newY } = event;
-
-        const xDelta = newX - currentX;
-        const yDelta = newY - currentY;
-
-        this.$emit("move", {
-          offset: { x: xDelta, y: yDelta },
-          resolve: (newOffset: Position) => {
-            // Atualiza os dados da posição atual para que o próximo offset seja calculado corretamente
-            if (newOffset && this.currentDragPosition) {
-              this.currentDragPosition.x += newOffset.x;
-              this.currentDragPosition.y += newOffset.y;
-            }
-          },
-        });
-      }
     },
   },
 });
