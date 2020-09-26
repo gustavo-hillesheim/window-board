@@ -1,25 +1,37 @@
 <template>
-  <FrameCard>
-    <template #cardHeader>
-      <SiteUrlInput
-        style="flex: 1"
-        :initialValue="siteUrl"
-        @search="siteUrl = $event"
-      />
-      <FrameMoveHandle
-        @mousedown.native.prevent="initDrag"
-        @mouseup.native.prevent="endDrag"
-      />
-    </template>
-    <FrameWrapper
-      style="height: 100%"
-      :url="siteUrl"
-      @mouseenter.native.prevent="endDrag"
-    ></FrameWrapper>
-  </FrameCard>
+  <VueResizable
+    :width="bounds.width"
+    :height="bounds.height"
+    :left="bounds.x"
+    :top="bounds.y"
+    :disableAttributes="bounds.disabledBounds"
+    @resize:start="isChangingBounds = true"
+    @resize:move="handleResize"
+    @resize:end="isChangingBounds = false"
+  >
+    <FrameCard>
+      <template #cardHeader>
+        <SiteUrlInput
+          style="flex: 1"
+          :initialValue="siteUrl"
+          @search="siteUrl = $event"
+        />
+        <FrameMoveHandle
+          @mousedown.native.prevent="initDrag"
+          @mouseup.native.prevent="endDrag"
+        />
+      </template>
+      <FrameWrapper
+        :style="frameStyle"
+        :url="siteUrl"
+        @mouseenter.native.prevent="endDrag"
+      ></FrameWrapper>
+    </FrameCard>
+  </VueResizable>
 </template>
 <script lang="ts">
 import Vue from "vue";
+import VueResizable from "vue-resizable";
 
 import { Position } from "../../model/frame.model";
 
@@ -32,9 +44,22 @@ type DraggableListener = (e: MouseEvent) => void;
 
 export default Vue.extend({
   name: "site-frame",
-  components: { FrameCard, FrameWrapper, FrameMoveHandle, SiteUrlInput },
+  props: {
+    bounds: {
+      type: Object,
+      required: true,
+    },
+  },
+  components: {
+    FrameCard,
+    FrameWrapper,
+    FrameMoveHandle,
+    SiteUrlInput,
+    VueResizable,
+  },
   data: () => ({
     siteUrl: "https://www.google.com/?igu=1",
+    isChangingBounds: false,
     currentDragPosition: null as Position,
     boundDragMovement: null as DraggableListener,
     boundEndDrag: null as DraggableListener,
@@ -43,8 +68,25 @@ export default Vue.extend({
     this.boundDragMovement = this.emitDragMovement.bind(this);
     this.boundEndDrag = this.endDrag.bind(this);
   },
+  computed: {
+    frameStyle(): any {
+      return {
+        height: "100%",
+        pointerEvents: this.isChangingBounds ? "none" : "auto",
+      };
+    },
+  },
   methods: {
+    handleResize(event: any): void {
+      this.$emit("update-bounds", {
+        x: event.left,
+        y: event.top,
+        width: event.width,
+        height: event.height,
+      });
+    },
     initDrag(event: MouseEvent): void {
+      this.isChangingBounds = true;
       this.currentDragPosition = {
         x: event.clientX,
         y: event.clientY,
@@ -54,6 +96,7 @@ export default Vue.extend({
       document.addEventListener("mouseup", this.boundEndDrag);
     },
     endDrag(): void {
+      this.isChangingBounds = false;
       this.currentDragPosition = null;
       document.body.style.cursor = "default";
       document.removeEventListener("mousemove", this.boundDragMovement);
@@ -82,3 +125,9 @@ export default Vue.extend({
   },
 });
 </script>
+<style scoped>
+.frame-card {
+  width: 100%;
+  height: 100%;
+}
+</style>
