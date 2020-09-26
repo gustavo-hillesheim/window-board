@@ -1,5 +1,5 @@
 <template>
-  <div class="window-board">
+  <div class="window-board" ref="board">
     <SiteFrame
       v-for="frame in frames"
       :key="frame.id"
@@ -10,6 +10,7 @@
 </template>
 <script lang="ts">
 import Vue from "vue";
+import { Position } from "vue-router/types/router";
 
 import { FrameData } from "../../model/frame.model";
 
@@ -29,6 +30,12 @@ export default Vue.extend({
       },
     ] as FrameData[],
   }),
+  computed: {
+    board(): HTMLElement {
+      console.log(this.$refs);
+      return this.$refs["board"] as HTMLElement;
+    },
+  },
   methods: {
     getFrameStyle(frame: FrameData) {
       return {
@@ -41,11 +48,36 @@ export default Vue.extend({
     moveFrame(
       frame: FrameData,
       offset: { x: number; y: number },
-      resolveMoving: (hasMoved: boolean) => void
+      resolveMoving: (newPosition: Position) => void
     ) {
-      frame.x += offset.x;
-      frame.y += offset.y;
-      resolveMoving(true);
+      const { x: currentX, y: currentY } = frame;
+      const { x: newX, y: newY } = this.getNewPosition(frame, offset);
+      frame.x = newX;
+      frame.y = newY;
+      resolveMoving({ x: newX - currentX, y: newY - currentY });
+    },
+    getNewPosition(frame: FrameData, offset: Position): Position {
+      const newPosition: Position = {
+        x: frame.x + offset.x,
+        y: frame.y + offset.y,
+      };
+      const boardWidth = this.board.clientWidth;
+      const boardHeight = this.board.clientHeight;
+
+      newPosition.x = newPosition.x < 0 ? 0 : newPosition.x;
+      newPosition.y = newPosition.y < 0 ? 0 : newPosition.y;
+
+      const boardOverflowX = newPosition.x + frame.width - boardWidth;
+      const boardOverflowY = newPosition.y + frame.height - boardHeight;
+
+      if (boardOverflowX > 0) {
+        newPosition.x -= boardOverflowX;
+      }
+      if (boardOverflowY > 0) {
+        newPosition.y -= boardOverflowY;
+      }
+
+      return newPosition;
     },
   },
 });

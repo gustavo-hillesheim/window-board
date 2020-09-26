@@ -34,12 +34,14 @@ export default Vue.extend({
   name: "site-frame",
   components: { FrameCard, FrameWrapper, FrameMoveHandle, SiteUrlInput },
   data: () => ({
-    siteUrl: "https://clima.gustavohill.dev",
+    siteUrl: "https://www.google.com/?igu=1",
     currentDragPosition: null as Position,
     boundDragMovement: null as DraggableListener,
+    boundEndDrag: null as DraggableListener,
   }),
   created() {
     this.boundDragMovement = this.emitDragMovement.bind(this);
+    this.boundEndDrag = this.endDrag.bind(this);
   },
   methods: {
     initDrag(event: MouseEvent): void {
@@ -47,11 +49,15 @@ export default Vue.extend({
         x: event.clientX,
         y: event.clientY,
       };
+      document.body.style.cursor = "grabbing";
       document.addEventListener("mousemove", this.boundDragMovement);
+      document.addEventListener("mouseup", this.boundEndDrag);
     },
     endDrag(): void {
       this.currentDragPosition = null;
+      document.body.style.cursor = "default";
       document.removeEventListener("mousemove", this.boundDragMovement);
+      document.removeEventListener("mouseup", this.boundEndDrag);
     },
     emitDragMovement(event: MouseEvent): void {
       if (this.currentDragPosition) {
@@ -63,11 +69,11 @@ export default Vue.extend({
 
         this.$emit("move", {
           offset: { x: xDelta, y: yDelta },
-          resolve: (moved: boolean) => {
+          resolve: (newOffset: Position) => {
             // Atualiza os dados da posição atual para que o próximo offset seja calculado corretamente
-            if (moved && this.currentDragPosition) {
-              this.currentDragPosition.x += xDelta;
-              this.currentDragPosition.y += yDelta;
+            if (newOffset && this.currentDragPosition) {
+              this.currentDragPosition.x += newOffset.x;
+              this.currentDragPosition.y += newOffset.y;
             }
           },
         });
